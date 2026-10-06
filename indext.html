@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Baku Auto Empire - Business Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Orientation Warning (Telefonda dik tutulanda görünən ekran) -->
+    <div id="orientation-overlay">
+        <div class="rotate-device-icon">🔄</div>
+        <h2>Ekranı Yan Çevirin</h2>
+        <p>Baku Auto Empire oyununu tam təcrübə etmək üçün telefonunuzu üfüqi (Landscape) rejimə çevirin.</p>
+    </div>
+
+    <!-- Main Game Container -->
+    <div id="game-container">
+        
+        <!-- Header / Top Navigation Bar -->
+        <header id="top-bar">
+            <div class="brand">
+                <span class="logo-icon">🚗</span>
+                <span class="logo-text">Bakı Fleet <small>v0.1 Phase 1</small></span>
+            </div>
+
+            <div class="stats-group">
+                <div class="stat-card">
+                    <span class="stat-label">Balans</span>
+                    <span class="stat-value" id="balance-display">15,000 AZN</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Gündəlik Qazanc</span>
+                    <span class="stat-value positive" id="income-display">+0 AZN/gün</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Reputasiya</span>
+                    <span class="stat-value" id="reputation-display">⭐ 1.0</span>
+                </div>
+            </div>
+
+            <!-- Time Controls -->
+            <div class="time-controls">
+                <div class="time-display">
+                    <span id="day-display">Gün 1</span>
+                    <small id="clock-display">08:00</small>
+                </div>
+                <div class="speed-btns">
+                    <button class="speed-btn" data-speed="0" id="btn-pause">⏸️</button>
+                    <button class="speed-btn active" data-speed="1" id="btn-1x">1x</button>
+                    <button class="speed-btn" data-speed="2" id="btn-2x">2x</button>
+                    <button class="speed-btn" data-speed="4" id="btn-4x">4x</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard View -->
+        <main id="main-content">
+            <!-- Navigation Sidebar -->
+            <nav id="sidebar">
+                <button class="nav-item active" data-tab="garage">🏎️ Qarajım</button>
+                <button class="nav-item" data-tab="market">🏪 Maşın Bazarı</button>
+                <button class="nav-item" data-tab="customers">👤 Müştərilər</button>
+                <button class="nav-item" data-tab="finance">📊 Maliyyə</button>
+            </nav>
+
+            <!-- Workspace Content -->
+            <section id="tab-content">
+                
+                <!-- Garage Tab View -->
+                <div id="garage-tab" class="tab-pane active">
+                    <div class="pane-header">
+                        <h2>Qarajım <small>(Aktiv Park: <span id="fleet-count">1</span>/3)</small></h2>
+                        <button class="btn btn-primary" id="btn-quick-save">💾 Yadda Saxla</button>
+                    </div>
+
+                    <div class="car-grid" id="garage-car-list">
+                        <!-- Default Initial Car Card -->
+                        <div class="car-card">
+                            <div class="car-badge">İcarədə deyil</div>
+                            <div class="car-image-placeholder">🚗 Khazar SD (2019)</div>
+                            <div class="car-details">
+                                <h3>Khazar SD 1.7 Benzın</h3>
+                                <div class="car-metrics">
+                                    <span>Vəziyyət: <b class="good">95%</b></span>
+                                    <span>Gediş: <b>42,000 km</b></span>
+                                </div>
+                                <div class="car-price-tag">
+                                    <span>Təklif Olunan Qiymət:</span>
+                                    <strong>35 AZN / gün</strong>
+                                </div>
+                                <button class="btn btn-action" onclick="alert('Phase 2-də aktivləşəcək!')">Müştəri Gözləyir...</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- Notification Toast System -->
+        <div id="toast-container"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
