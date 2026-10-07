@@ -280,3 +280,83 @@ body, html {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
+
+/* Phase 2 Additional CSS Styles */
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Customer Requests Layout */
+.customer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.customer-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.customer-info h4 {
+    color: #38bdf8;
+    margin-bottom: 4px;
+}
+
+.customer-info p {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.customer-offer {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.offer-badge {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4ade80;
+}
+
+.btn-rent {
+    background: #059669;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-rent:hover {
+    background: #10b981;
+}
+
+.btn-buy {
+    background: #2563eb;
+    color: white;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.btn-buy:hover {
+    background: #3b82f6;
+}
+
+.badge-rented {
+    background: #dc2626 !important;
+}
