@@ -1,29 +1,44 @@
 /**
- * Baku Auto Empire - Phase 1 Core Engine
+ * Baku Auto Empire - Phase 2 Core Engine
  */
 
-// 1. STATE MANAGER (Mərkəzi Məlumat Deposu)
+// 1. STATE MANAGER
 const GameState = {
     balance: 15000,
     incomePerDay: 0,
     reputation: 1.0,
     day: 1,
     hour: 8,
-    gameSpeed: 1, // 0 = Pause, 1 = Normal, 2 = Fast, 4 = Ultra Fast
+    gameSpeed: 1,
     fleet: [
         {
             id: 'car_khazar_01',
-            name: 'Khazar SD 1.7 Benzın',
+            name: 'Khazar SD 1.7',
             year: 2019,
             condition: 95,
             mileage: 42000,
             dailyRate: 35,
-            status: 'AVAILABLE' // AVAILABLE, RENTED, SERVICE
+            status: 'AVAILABLE', // AVAILABLE, RENTED
+            rentDaysRemaining: 0,
+            currentRenter: null
         }
-    ]
+    ],
+    marketCars: [],
+    customerRequests: []
 };
 
-// Timer Reference
+// Database Templates for Market
+const CarTemplates = [
+    { name: 'VAZ 2107', year: 2011, basePrice: 4500, dailyRate: 20, mileage: 130000 },
+    { name: 'Tofaş Şahin 1.6', year: 2002, basePrice: 3800, dailyRate: 18, mileage: 185000 },
+    { name: 'Khazar SD 1.7', year: 2020, basePrice: 8500, dailyRate: 35, mileage: 55000 },
+    { name: 'Hyundai Elantra', year: 2015, basePrice: 17500, dailyRate: 60, mileage: 110000 },
+    { name: 'Toyota Prius 20', year: 2008, basePrice: 12000, dailyRate: 45, mileage: 210000 },
+    { name: 'Kia Optima 2.0T', year: 2014, basePrice: 19000, dailyRate: 70, mileage: 125000 }
+];
+
+const CustomerNames = ['Rəşad M.', 'Elvin K.', 'Orxan A.', 'Tural Q.', 'Cavid B.', 'Nurlan S.'];
+
 let gameLoopInterval = null;
 
 // 2. ECONOMY ENGINE
@@ -60,13 +75,110 @@ const EconomyEngine = {
                 Object.assign(GameState, parsed);
                 UIController.showToast("💾 Yadda saxlanılmış proqress yükləndi.");
             } catch (e) {
-                console.error("Save faylı oxunarkən xəta yarandı", e);
+                console.error("Save faylı oxunarkən xəta", e);
             }
         }
     }
 };
 
-// 3. TIME ENGINE
+// 3. RENTAL & MARKET SYSTEM
+const FleetManager = {
+    generateMarket() {
+        GameState.marketCars = [];
+        for (let i = 0; i < 4; i++) {
+            const tpl = CarTemplates[Math.floor(Math.random() * CarTemplates.length)];
+            const variation = Math.floor(Math.random() * 1000) - 500;
+            GameState.marketCars.push({
+                id: 'm_car_' + Date.now() + '_' + i,
+                name: tpl.name,
+                year: tpl.year,
+                price: tpl.basePrice + variation,
+                dailyRate: tpl.dailyRate,
+                condition: Math.floor(Math.random() * 20) + 80,
+                mileage: tpl.mileage + Math.floor(Math.random() * 10000)
+            });
+        }
+        UIController.renderMarket();
+    },
+
+    buyCar(marketCarId) {
+        const car = GameState.marketCars.find(c => c.id === marketCarId);
+        if (!car) return;
+
+        if (EconomyEngine.deductFunds(car.price, `${car.name} alışı`)) {
+            GameState.fleet.push({
+                id: 'car_' + Date.now(),
+                name: car.name,
+                year: car.year,
+                condition: car.condition,
+                mileage: car.mileage,
+                dailyRate: car.dailyRate,
+                status: 'AVAILABLE',
+                rentDaysRemaining: 0,
+                currentRenter: null
+            });
+
+            GameState.marketCars = GameState.marketCars.filter(c => c.id !== marketCarId);
+            UIController.renderGarage();
+            UIController.renderMarket();
+            UIController.updateStats();
+            this.generateCustomerRequests();
+        }
+    },
+
+    generateCustomerRequests() {
+        GameState.customerRequests = [];
+        const availableCars = GameState.fleet.filter(c => c.status === 'AVAILABLE');
+
+        availableCars.forEach(car => {
+            if (Math.random() > 0.3) {
+                const renterName = CustomerNames[Math.floor(Math.random() * CustomerNames.length)];
+                const duration = Math.floor(Math.random() * 5) + 2; // 2-7 gün
+                GameState.customerRequests.push({
+                    id: 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    carId: car.id,
+                    carName: car.name,
+                    renterName: renterName,
+                    duration: duration,
+                    offeredRate: car.dailyRate
+                });
+            }
+        });
+        UIController.renderCustomerRequests();
+    },
+
+    acceptRentalRequest(reqId) {
+        const req = GameState.customerRequests.find(r => r.id === reqId);
+        if (!req) return;
+
+        const car = GameState.fleet.find(c => c.id === req.carId);
+        if (car && car.status === 'AVAILABLE') {
+            car.status = 'RENTED';
+            car.rentDaysRemaining = req.duration;
+            car.currentRenter = req.renterName;
+
+            GameState.customerRequests = GameState.customerRequests.filter(r => r.id !== reqId);
+            
+            UIController.showToast(`🤝 ${car.name} ${req.duration} günlük ${req.renterName} şəxsə icarəyə verildi!`);
+            this.recalculateDailyIncome();
+            UIController.renderGarage();
+            UIController.renderCustomerRequests();
+        }
+    },
+
+    recalculateDailyIncome() {
+        let total = 0;
+        GameState.fleet.forEach(car => {
+            if (car.status === 'RENTED') {
+                total += car.dailyRate;
+            }
+        });
+        GameState.incomePerDay = total;
+        UIController.updateStats();
+    }
+};
+
+// 4. TIME ENGINE
 const TimeEngine = {
     init() {
         this.startLoop();
@@ -75,7 +187,6 @@ const TimeEngine = {
     startLoop() {
         if (gameLoopInterval) clearInterval(gameLoopInterval);
         
-        // 1 oyun saatı = (1000ms / speed)
         if (GameState.gameSpeed > 0) {
             const intervalTime = 1200 / GameState.gameSpeed;
             gameLoopInterval = setInterval(() => {
@@ -102,22 +213,45 @@ const TimeEngine = {
 
     onDayEnd() {
         UIController.showToast(`🌅 Gün ${GameState.day} başladı!`);
-        // Daily Calculations (Gələcək Phase-lərdə genişlənəcək)
+
+        // Calculate Daily Rental Payments
+        let dailyProfit = 0;
+        GameState.fleet.forEach(car => {
+            if (car.status === 'RENTED') {
+                dailyProfit += car.dailyRate;
+                car.rentDaysRemaining--;
+                car.mileage += Math.floor(Math.random() * 80) + 40; // Gündəlik sürüş
+
+                if (car.rentDaysRemaining <= 0) {
+                    car.status = 'AVAILABLE';
+                    car.currentRenter = null;
+                    UIController.showToast(`🔑 ${car.name} müqaviləsi bitti, qaraja qaytarıldı.`);
+                }
+            }
+        });
+
+        if (dailyProfit > 0) {
+            EconomyEngine.addFunds(dailyProfit, "Gündəlik İcarə Gəlirləri");
+        }
+
+        FleetManager.recalculateDailyIncome();
+        FleetManager.generateCustomerRequests();
+        UIController.renderGarage();
         EconomyEngine.saveGame();
     }
 };
 
-// 4. UI CONTROLLER
+// 5. UI CONTROLLER
 const UIController = {
     init() {
         this.bindEvents();
         this.updateStats();
         this.updateTimeDisplay();
         this.updateSpeedButtons();
+        this.renderGarage();
     },
 
     bindEvents() {
-        // Speed Control Buttons
         document.querySelectorAll('.speed-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const speed = parseInt(e.target.dataset.speed);
@@ -125,23 +259,122 @@ const UIController = {
             });
         });
 
-        // Quick Save Button
         document.getElementById('btn-quick-save').addEventListener('click', () => {
             EconomyEngine.saveGame();
             UIController.showToast("💾 Oyun uğurla yadda saxlanıldı!");
         });
 
-        // Navigation Tabs (Future expansion)
+        document.getElementById('btn-refresh-market').addEventListener('click', () => {
+            FleetManager.generateMarket();
+            UIController.showToast("🔄 Bazar avtomobilləri yeniləndi.");
+        });
+
+        // Tab Navigation
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                const tab = e.target.dataset.tab;
-                if (tab !== 'garage') {
-                    UIController.showToast(`📌 ${e.target.innerText} bölməsi növbəti fazalarda açılacaq.`);
+                const targetTab = e.target.dataset.tab;
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.style.display = 'none';
+                    pane.classList.remove('active');
+                });
+
+                const activePane = document.getElementById(`${targetTab}-tab`);
+                if (activePane) {
+                    activePane.style.display = 'block';
+                    activePane.classList.add('active');
                 }
             });
+        });
+    },
+
+    renderGarage() {
+        const list = document.getElementById('garage-car-list');
+        list.innerHTML = '';
+
+        GameState.fleet.forEach(car => {
+            const isRented = car.status === 'RENTED';
+            const card = document.createElement('div');
+            card.className = 'car-card';
+            card.innerHTML = `
+                <div class="car-badge ${isRented ? 'badge-rented' : ''}">
+                    ${isRented ? `İcarədə (${car.rentDaysRemaining} gün qaldı)` : 'Qarajda (Sərbəst)'}
+                </div>
+                <div class="car-image-placeholder">🚗 ${car.name} (${car.year})</div>
+                <div class="car-details">
+                    <h3>${car.name}</h3>
+                    <div class="car-metrics">
+                        <span>Vəziyyət: <b class="good">${car.condition}%</b></span>
+                        <span>Gediş: <b>${car.mileage.toLocaleString()} km</b></span>
+                    </div>
+                    <div class="car-price-tag">
+                        <span>Günlük İcarə:</span>
+                        <strong>${car.dailyRate} AZN / gün</strong>
+                    </div>
+                    ${isRented ? `<p style="font-size:12px; color:#38bdf8; margin-top:6px;">Müştəri: <b>${car.currentRenter}</b></p>` : ''}
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    },
+
+    renderMarket() {
+        const list = document.getElementById('market-car-list');
+        list.innerHTML = '';
+
+        if (GameState.marketCars.length === 0) {
+            list.innerHTML = '<p style="color:#94a3b8;">Bazar boşdur. Yeniləmək üçün yuxarıdakı düyməyə basın.</p>';
+            return;
+        }
+
+        GameState.marketCars.forEach(car => {
+            const card = document.createElement('div');
+            card.className = 'car-card';
+            card.innerHTML = `
+                <div class="car-image-placeholder">🏪 ${car.name} (${car.year})</div>
+                <div class="car-details">
+                    <h3>${car.name}</h3>
+                    <div class="car-metrics">
+                        <span>Vəziyyət: <b>${car.condition}%</b></span>
+                        <span>Gediş: <b>${car.mileage.toLocaleString()} km</b></span>
+                    </div>
+                    <div class="car-price-tag">
+                        <span>Qiymət:</span>
+                        <strong>${car.price.toLocaleString()} AZN</strong>
+                    </div>
+                    <button class="btn btn-buy" onclick="FleetManager.buyCar('${car.id}')">Alın (${car.price} AZN)</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    },
+
+    renderCustomerRequests() {
+        const list = document.getElementById('customer-requests-list');
+        list.innerHTML = '';
+
+        if (GameState.customerRequests.length === 0) {
+            list.innerHTML = '<p style="color:#94a3b8;">Hazırda yeni icarə müraciəti yoxdur. Növbəti günü gözləyin.</p>';
+            return;
+        }
+
+        GameState.customerRequests.forEach(req => {
+            const card = document.createElement('div');
+            card.className = 'customer-card';
+            card.innerHTML = `
+                <div class="customer-info">
+                    <h4>👤 ${req.renterName}</h4>
+                    <p>Avtomobil: <b>${req.carName}</b></p>
+                    <p>Müddət: <b>${req.duration} Günlük</b></p>
+                </div>
+                <div class="customer-offer">
+                    <span class="offer-badge">+${req.offeredRate * req.duration} AZN Toplam</span>
+                    <button class="btn-rent" onclick="FleetManager.acceptRentalRequest('${req.id}')">İcarəyə Ver (${req.offeredRate} AZN/gün)</button>
+                </div>
+            `;
+            list.appendChild(card);
         });
     },
 
@@ -182,9 +415,12 @@ const UIController = {
     }
 };
 
-// 5. APPLICATION INITIALIZATION
+// 6. INITIALIZATION
 window.addEventListener('DOMContentLoaded', () => {
     EconomyEngine.loadGame();
     UIController.init();
     TimeEngine.init();
+    FleetManager.generateMarket();
+    FleetManager.generateCustomerRequests();
+    FleetManager.recalculateDailyIncome();
 });
