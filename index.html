@@ -69,32 +69,48 @@
             <!-- Workspace Content -->
             <section id="tab-content">
                 
+<!-- Workspace Content -->
+            <section id="tab-content">
+                
                 <!-- Garage Tab View -->
                 <div id="garage-tab" class="tab-pane active">
                     <div class="pane-header">
-                        <h2>Qarajım <small>(Aktiv Park: <span id="fleet-count">1</span>/3)</small></h2>
+                        <h2>Qarajım <small>(Aktiv Park: <span id="fleet-count">1</span>)</small></h2>
                         <button class="btn btn-primary" id="btn-quick-save">💾 Yadda Saxla</button>
                     </div>
 
                     <div class="car-grid" id="garage-car-list">
-                        <!-- Default Initial Car Card -->
-                        <div class="car-card">
-                            <div class="car-badge">İcarədə deyil</div>
-                            <div class="car-image-placeholder">🚗 Khazar SD (2019)</div>
-                            <div class="car-details">
-                                <h3>Khazar SD 1.7 Benzın</h3>
-                                <div class="car-metrics">
-                                    <span>Vəziyyət: <b class="good">95%</b></span>
-                                    <span>Gediş: <b>42,000 km</b></span>
-                                </div>
-                                <div class="car-price-tag">
-                                    <span>Təklif Olunan Qiymət:</span>
-                                    <strong>35 AZN / gün</strong>
-                                </div>
-                                <button class="btn btn-action" onclick="alert('Phase 2-də aktivləşəcək!')">Müştəri Gözləyir...</button>
-                            </div>
-                        </div>
+                        <!-- JS vasitəsilə dinamik doldurulacaq -->
                     </div>
+                </div>
+
+                <!-- Market Tab View (YENİ PHASE 2) -->
+                <div id="market-tab" class="tab-pane" style="display: none;">
+                    <div class="pane-header">
+                        <h2>Bakı İkinci Əl Avto Bazarı</h2>
+                        <button class="btn btn-primary" id="btn-refresh-market">🔄 Pazarı Yenilə</button>
+                    </div>
+                    <div class="car-grid" id="market-car-list">
+                        <!-- JS vasitəsilə dinamik doldurulacaq -->
+                    </div>
+                </div>
+
+                <!-- Customers Tab View (YENİ PHASE 2) -->
+                <div id="customers-tab" class="tab-pane" style="display: none;">
+                    <div class="pane-header">
+                        <h2>Gələn İcarə Müraciətləri</h2>
+                    </div>
+                    <div class="customer-list" id="customer-requests-list">
+                        <!-- JS vasitəsilə dinamik doldurulacaq -->
+                    </div>
+                </div>
+
+                <!-- Finance Tab View Placeholder -->
+                <div id="finance-tab" class="tab-pane" style="display: none;">
+                    <div class="pane-header">
+                        <h2>Maliyyə Hesabatı və Hesablar</h2>
+                    </div>
+                    <p style="color: #94a3b8;">Maliyyə və Bank modulu Phase 3-də açılacaq.</p>
                 </div>
 
             </section>
