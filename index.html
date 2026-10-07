@@ -121,5 +121,39 @@
     </div>
 
     <script src="app.js"></script>
+<!-- Service Modal (YENİ PHASE 3) -->
+    <div id="service-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-car-title">🔧 Avtomobil Təmiri və Servis</h3>
+                <button class="btn-close" id="btn-close-modal">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="service-option-card">
+                    <div>
+                        <h4>🛢️ Baza Yağ dəyişmə Və Texniki Baxış</h4>
+                        <p>Aşınmanı +15% bərpa edir.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="FleetManager.applyService('BASIC')">120 AZN</button>
+                </div>
+
+                <div class="service-option-card">
+                    <div>
+                        <h4>🛠️ Əsaslı Təmir Və Ehtiyat Hissələri</h4>
+                        <p>Aşınmanı +40% bərpa edir.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="FleetManager.applyService('MAJOR')">450 AZN</button>
+                </div>
+
+                <div class="service-option-card">
+                    <div>
+                        <h4>✨ Bakı Detailing & Kapot Boyası</h4>
+                        <p>Vəziyyəti tam 100%-ə qaldırır və gündəlik icarə dəyərini +5 AZN artırır.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="FleetManager.applyService('FULL')">800 AZN</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
